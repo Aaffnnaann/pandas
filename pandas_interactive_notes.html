@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandas — A Data Story</title>
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --card: #13162200;
+    --card-solid: #13162280;
+    --card2: #1e2235;
+    --accent: #f5c542;
+    --accent2: #56cfff;
+    --accent3: #6ee7b7;
+    --accent4: #f87171;
+    --text: #e8eaf6;
+    --muted: #7b8099;
+    --border: #252840;
+    --beginner: #4ade80;
+    --intermediate: #fb923c;
+    --advanced: #f87171;
+    --story-bg: #0a0e1e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.8; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 0%, #1a2060 0%, #0d0f1a 70%);
+    padding: 70px 24px 52px;
+    text-align: center;
+    border-bottom: 1px solid #1e2450;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero-eyebrow { font-size: 0.78rem; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-bottom: 14px; }
+  .hero h1 { font-size: 3rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--muted); margin-top: 14px; font-size: 1.05rem; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .hero-quote {
+    display: inline-block;
+    margin-top: 28px;
+    background: #ffffff08;
+    border: 1px solid #ffffff10;
+    border-left: 3px solid var(--accent);
+    padding: 12px 20px;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #a0a8c8;
+    font-size: 0.95rem;
+    max-width: 540px;
+  }
+  .badge-row { display: flex; justify-content: center; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+  .badge { padding: 5px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.8px; cursor: pointer; transition: all 0.2s; }
+  .badge.b { background: #052e1660; color: var(--beginner); border: 1px solid var(--beginner); }
+  .badge.i { background: #431a0060; color: #fdba74; border: 1px solid var(--intermediate); }
+  .badge.a { background: #3b0c0c60; color: var(--advanced); border: 1px solid var(--advanced); }
+  .badge:hover { opacity: 0.8; transform: translateY(-1px); }
+
+  /* ── NAV ── */
+  .tab-nav {
+    display: flex; gap: 0;
+    background: #0d0f1a;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .tab-btn {
+    padding: 15px 22px;
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 0.88rem; font-weight: 600;
+    white-space: nowrap; border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .tab-content { display: none; max-width: 900px; margin: 0 auto; padding: 40px 20px 60px; }
+  .tab-content.active { display: block; }
+
+  /* ── STORY BANNER ── */
+  .story-banner {
+    background: linear-gradient(135deg, #0f1730 0%, #0a0e1e 100%);
+    border: 1px solid #1e2860;
+    border-radius: 14px;
+    padding: 28px 30px;
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .story-banner::before {
+    content: attr(data-chapter);
+    position: absolute; top: 18px; right: 20px;
+    font-size: 0.72rem; letter-spacing: 2px; color: #3a4060;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .story-banner .chapter-label {
+    font-size: 0.72rem; letter-spacing: 2px;
+    color: var(--accent); text-transform: uppercase; font-weight: 700; margin-bottom: 8px;
+  }
+  .story-banner h2 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+  .story-banner p { color: #8090b8; font-size: 0.95rem; line-height: 1.7; }
+  .story-banner p + p { margin-top: 8px; }
+
+  /* ── CONCEPT BLOCK ── */
+  .concept {
+    margin-bottom: 44px;
+  }
+  .concept-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .concept-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #000;
+    font-weight: 800; font-size: 0.82rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .concept-num.i { background: var(--intermediate); }
+  .concept-num.a { background: var(--advanced); }
+  .concept-title { font-size: 1.15rem; font-weight: 700; color: #fff; }
+  .concept-tag {
+    font-size: 0.7rem; font-weight: 700; padding: 2px 10px;
+    border-radius: 12px; letter-spacing: 0.5px;
+  }
+  .concept-tag.b { background: #052e1640; color: var(--beginner); border: 1px solid #4ade8050; }
+  .concept-tag.i { background: #43180040; color: #fdba74; border: 1px solid #fb923c50; }
+  .concept-tag.a { background: #3b0c0c40; color: var(--advanced); border: 1px solid #f8717150; }
+
+  /* story-lead — the "why" paragraph before code */
+  .story-lead {
+    color: #8898c0;
+    font-size: 0.94rem;
+    line-height: 1.8;
+    margin: 12px 0 16px;
+    padding-left: 12px;
+    border-left: 2px solid #252840;
+  }
+  .story-lead strong { color: #b0c0e0; }
+  .story-lead em { color: var(--accent); font-style: normal; font-weight: 600; }
+
+  /* ── CODE ── */
+  .code-wrap { position: relative; margin: 14px 0; }
+  .code-block {
+    background: #070a14;
+    border: 1px solid #1a1e38;
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.86rem;
+    overflow-x: auto;
+    line-height: 1.85;
+  }
+  .code-block .cm  { color: #4a5568; }
+  .code-block .kw  { color: #ff7eb6; }
+  .code-block .st  { color: #9ecbff; }
+  .code-block .fn  { color: #c792ea; }
+  .code-block .nm  { color: #f78c6c; }
+  .code-block .out { color: #4ade80; display: block; border-top: 1px dashed #1a1e38; margin-top: 10px; padding-top: 10px; }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: #1a1e38; border: 1px solid #2a2e50;
+    color: var(--muted); border-radius: 6px; padding: 3px 11px;
+    font-size: 0.72rem; cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── INSIGHT BOXES ── */
+  .insight {
+    border-radius: 10px; padding: 14px 18px;
+    margin: 14px 0; font-size: 0.9rem; line-height: 1.7;
+  }
+  .insight.why  { background: #0e1830; border-left: 3px solid var(--accent2); color: #90c4e8; }
+  .insight.warn { background: #1a1100; border-left: 3px solid var(--accent); color: #e9c46a; }
+  .insight.tip  { background: #071a10; border-left: 3px solid var(--beginner); color: #86efac; }
+  .insight.danger { background: #1a0808; border-left: 3px solid var(--advanced); color: #fca5a5; }
+  .insight strong { color: #fff; }
+
+  /* ── TOGGLE ── */
+  .reveal-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #131728; border: 1px solid #252840;
+    color: var(--accent2); border-radius: 7px; padding: 7px 14px;
+    font-size: 0.82rem; cursor: pointer; margin-top: 10px;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .reveal-btn:hover { background: #1a2040; }
+  .reveal-box {
+    background: #0b0e1e; border: 1px solid #1e2440;
+    border-radius: 10px; padding: 16px 18px;
+    margin-top: 10px; display: none;
+    color: #8898c0; font-size: 0.9rem; line-height: 1.8;
+  }
+  .reveal-box.open { display: block; }
+  .reveal-box strong { color: #c5d0f0; }
+
+  /* ── ANALOGY CARD ── */
+  .analogy {
+    background: linear-gradient(135deg, #120e28 0%, #0e1020 100%);
+    border: 1px solid #2a2050;
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 16px 0;
+  }
+  .analogy-label { font-size: 0.72rem; letter-spacing: 2px; color: #7060b0; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .analogy p { color: #a090d0; font-size: 0.92rem; line-height: 1.7; }
+  .analogy strong { color: #d0c0f8; }
+
+  /* ── COMPARISON ── */
+  .compare-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0;
+  }
+  .compare-card {
+    background: #0e1020; border-radius: 10px; padding: 16px 18px;
+    font-size: 0.87rem;
+  }
+  .compare-card.good { border: 1px solid #1a4020; }
+  .compare-card.bad  { border: 1px solid #401a1a; }
+  .compare-card .label { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+  .compare-card.good .label { color: var(--beginner); }
+  .compare-card.bad  .label { color: var(--advanced); }
+  .compare-card pre { font-family: 'Cascadia Code', monospace; font-size: 0.82rem; color: #8898c0; line-height: 1.7; }
+
+  /* ── QUIZ ── */
+  .quiz-card {
+    background: #0e1020; border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 24px; margin-bottom: 20px;
+  }
+  .quiz-num { font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .quiz-q { font-size: 0.97rem; font-weight: 600; color: #c5d0f0; margin-bottom: 14px; line-height: 1.5; }
+  .quiz-opt {
+    display: block; width: 100%; text-align: left;
+    background: #13162a; border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 10px 16px;
+    margin-bottom: 8px; cursor: pointer; font-size: 0.88rem;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent2); background: #181c34; }
+  .quiz-opt.correct { background: #05200e; border-color: var(--beginner); color: #86efac; }
+  .quiz-opt.wrong   { background: #200505; border-color: var(--advanced); color: #fca5a5; }
+  .quiz-fb { display: none; margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; line-height: 1.6; }
+  .quiz-fb.ok  { display: block; background: #05200e; color: #86efac; }
+  .quiz-fb.no  { display: block; background: #200505; color: #fca5a5; }
+
+  /* ── CHEAT TABLE ── */
+  .cheat-section { margin-bottom: 32px; }
+  .cheat-title { font-size: 1rem; font-weight: 700; color: var(--accent2); margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--accent2); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+  th { background: #131728; color: var(--accent); padding: 10px 14px; text-align: left; border: 1px solid var(--border); font-weight: 600; }
+  td { padding: 9px 14px; border: 1px solid var(--border); color: #a0aec0; vertical-align: top; }
+  tr:hover td { background: #0e1020; }
+  .mono { font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+
+  /* ── PROGRESS PATH ── */
+  .path {
+    display: flex; flex-direction: column; gap: 0;
+    position: relative; padding-left: 24px; margin: 24px 0;
+  }
+  .path::before {
+    content: ''; position: absolute; left: 7px; top: 12px; bottom: 12px;
+    width: 2px; background: linear-gradient(to bottom, var(--beginner), var(--intermediate), var(--advanced));
+  }
+  .path-step {
+    position: relative; padding: 10px 0 10px 20px;
+  }
+  .path-step::before {
+    content: ''; position: absolute; left: -21px; top: 18px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+  }
+  .path-step.b::before { background: var(--beginner); }
+  .path-step.i::before { background: var(--intermediate); }
+  .path-step.a::before { background: var(--advanced); }
+  .path-step strong { color: var(--text); font-size: 0.9rem; }
+  .path-step p { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+  /* ── HOME CARDS ── */
+  .level-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 16px; margin: 24px 0; }
+  .level-card {
+    background: #0e1020; border-radius: 14px; padding: 22px;
+    cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+    border: 1px solid var(--border);
+  }
+  .level-card:hover { transform: translateY(-3px); }
+  .level-card.b { border-top: 3px solid var(--beginner); }
+  .level-card.i { border-top: 3px solid var(--intermediate); }
+  .level-card.a { border-top: 3px solid var(--advanced); }
+  .level-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .level-card.b h3 { color: var(--beginner); }
+  .level-card.i h3 { color: #fdba74; }
+  .level-card.a h3 { color: var(--advanced); }
+  .level-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+  .level-card .go { margin-top: 14px; font-size: 0.8rem; color: var(--accent); font-weight: 600; }
+
+  /* ── SCORE ── */
+  #quiz-result {
+    display: none; margin-top: 28px;
+    background: linear-gradient(135deg, #0f1730, #0a0e1e);
+    border: 1px solid #1e2860; border-radius: 14px;
+    padding: 28px; text-align: center;
+  }
+  #quiz-result h3 { font-size: 1.6rem; color: var(--accent); margin-bottom: 8px; }
+  #quiz-result p { color: var(--muted); font-size: 0.95rem; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #252840; border-radius: 3px; }
+
+  footer { text-align: center; padding: 36px; color: #3a4060; font-size: 0.82rem; border-top: 1px solid var(--border); margin-top: 48px; }
+
+  @media(max-width:600px){
+    .hero h1 { font-size: 2rem; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .tab-btn { padding: 12px 14px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">The Complete Journey</div>
+  <h1>Learning <span>Pandas</span><br>Like a Story</h1>
+  <p class="hero-sub">Not a reference manual. Not a lecture. A guided journey — from your very first line of code to writing production-grade pipelines.</p>
+  <div class="hero-quote">
+    "Every expert was once a beginner who just didn't stop asking 'but why?'"
+  </div>
+  <div class="badge-row">
+    <span class="badge b" onclick="showTab('beginner')">🟢 Chapter 1 — Beginner</span>
+    <span class="badge i" onclick="showTab('intermediate')">🟠 Chapter 2 — Intermediate</span>
+    <span class="badge a" onclick="showTab('advanced')">🔴 Chapter 3 — Advanced</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('home')">🏠 Start Here</button>
+  <button class="tab-btn" onclick="showTab('beginner')">🟢 Chapter 1</button>
+  <button class="tab-btn" onclick="showTab('intermediate')">🟠 Chapter 2</button>
+  <button class="tab-btn" onclick="showTab('advanced')">🔴 Chapter 3</button>
+  <button class="tab-btn" onclick="showTab('cheatsheet')">📋 Cheat Sheet</button>
+  <button class="tab-btn" onclick="showTab('quiz')">🧪 Quiz</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     HOME
+══════════════════════════════════════════ -->
+<div id="tab-home" class="tab-content active">
+
+  <div class="story-banner" data-chapter="Prologue">
+    <div class="chapter-label">Your Story Starts Here</div>
+    <h2>Imagine you just landed a data analyst role.</h2>
+    <p>Your manager walks over on Day 1, drops a USB drive on your desk and says:<br>
+    <em style="color:#c5d0f0">"Here's 3 years of sales data. Make sense of it by Friday."</em></p>
+    <p style="margin-top:10px">You open the file. 80,000 rows. 14 columns. Missing values everywhere. You stare at it. You open Excel. Excel crashes.</p>
+    <p style="margin-top:10px">That's the moment Pandas was built for. And that's exactly where this guide begins.</p>
+  </div>
+
+  <div class="level-cards">
+    <div class="level-card b" onclick="showTab('beginner')">
+      <h3>🟢 Chapter 1 — The Basics</h3>
+      <p>You've never touched Pandas. You'll go from zero to confidently loading, exploring, and filtering real data. No jargon. Just clear steps.</p>
+      <div class="go">Start reading →</div>
+    </div>
+    <div class="level-card i" onclick="showTab('intermediate')">
+      <h3>🟠 Chapter 2 — The Real Work</h3>
+      <p>You know the basics but hit walls with groupby, merging datasets, and messy data. This chapter solves the problems that actually show up on the job.</p>
+      <div class="go">Level up →</div>
+    </div>
+    <div class="level-card a" onclick="showTab('advanced')">
+      <h3>🔴 Chapter 3 — The Expert Edge</h3>
+      <p>Your scripts work but take 20 minutes on large data. Learn the techniques that separate a beginner from a senior — speed, memory, clean code.</p>
+      <div class="go">Go deeper →</div>
+    </div>
+  </div>
+
+  <div class="concept" style="margin-top:36px">
+    <div class="cheat-title" style="margin-bottom:16px">Your learning path</div>
+    <div class="path">
+      <div class="path-step b"><strong>What is Pandas? What is a DataFrame?</strong><p>The mental model you need before writing a single line.</p></div>
+      <div class="path-step b"><strong>Loading data — CSV, Excel, JSON</strong><p>Getting your data into Python without pain.</p></div>
+      <div class="path-step b"><strong>Exploring — head, info, describe</strong><p>The first 5 commands you run on every new dataset.</p></div>
+      <div class="path-step b"><strong>Selecting and filtering</strong><p>Asking questions of your data: "show me all rows where..."</p></div>
+      <div class="path-step i"><strong>Cleaning — missing values, duplicates</strong><p>Real data is messy. This is how you handle it.</p></div>
+      <div class="path-step i"><strong>GroupBy — aggregating and summarizing</strong><p>Turning raw data into insights by group.</p></div>
+      <div class="path-step i"><strong>Merging datasets</strong><p>Combining two tables — like SQL JOINs in Python.</p></div>
+      <div class="path-step i"><strong>Apply, Map, String & DateTime</strong><p>Transforming your data column by column.</p></div>
+      <div class="path-step a"><strong>Performance — vectorization & memory</strong><p>Why your script is slow and exactly how to fix it.</p></div>
+      <div class="path-step a"><strong>Method chaining — clean pipelines</strong><p>Writing code that reads like English, runs like C.</p></div>
+      <div class="path-step a"><strong>Advanced GroupBy, MultiIndex, eval()</strong><p>The power features most tutorials never mention.</p></div>
+    </div>
+  </div>
+
+  <div class="insight why">
+    <strong>Before you start — install Pandas:</strong><br>
+    <code style="font-family:monospace;color:#90c4e8">pip install pandas numpy</code><br>
+    Then at the top of every script or notebook: <code style="font-family:monospace;color:#90c4e8">import pandas as pd</code>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CHAPTER 1 — BEGINNER
+══════════════════════════════════════════ -->
+<div id="tab-beginner" class="tab-content">
+
+  <div class="story-banner" data-chapter="Chapter 1">
+    <div class="chapter-label">Chapter 1 · Beginner</div>
+    <h2>Day 1. You have data. Now what?</h2>
+    <p>You've just opened Python for the first time. You've heard of Pandas. You've heard it can do "data stuff". But what does that actually mean?</p>
+    <p>Here's the truth: Pandas is just a really powerful way to work with tables in Python. Think of it as Excel — but programmable, reproducible, and capable of handling millions of rows without breaking a sweat.</p>
+    <p>Let's start from the very beginning. No assumptions. Just curiosity.</p>
+  </div>
+
+  <!-- 1. What is a DataFrame -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">1</div>
+      <div class="concept-title">What even is a DataFrame?</div>
+      <span class="concept-tag b">Beginner</span>
+    </div>
+    <div class="story-lead">
+      Before you write any code, you need the right mental model. A <em>DataFrame</em> is just a table. Rows and columns. Like a spreadsheet. That's it. And a <em>Series</em> is just one column of that table — a list with a label on each item.
+      <br><br>
+      Think of it this way: if your data lives in Excel, a DataFrame is the sheet, and a Series is one of the columns you'd click on.
+    </div>
+    <div class="analogy">
+      <div class="analogy-label">Analogy</div>
+      <p>A <strong>DataFrame</strong> = an entire spreadsheet (rows + columns)<br>
+      A <strong>Series</strong> = one single column of that spreadsheet<br>
+      An <strong>index</strong> = the row numbers on the left side (like line numbers in Excel)</p>
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># A Series — just a labelled list</span>
+s = pd.<span class="fn">Series</span>([<span class="nm">85</span>, <span class="nm">92</span>, <span class="nm">78</span>, <span class="nm">95</span>], index=[<span class="st">'Alice'</span>, <span class="st">'Bob'</span>, <span class="st">'Charlie'</span>, <span class="st">'Diana'</span>])
+<span class="kw">print</span>(s[<span class="st">'Bob'</span>])
+<span class="out"># 92</span>
+
+<span class="cm"># A DataFrame — a full table</span>
+df = pd.<span class="fn">DataFrame</span>({
+    <span class="st">'Name'</span>:  [<span class="st">'Alice'</span>, <span class="st">'Bob'</span>, <span class="st">'Charlie'</span>],
+    <span class="st">'Score'</span>: [<span class="nm">85</span>, <span class="nm">92</span>, <span class="nm">78</span>],
+    <span class="st">'City'</span>:  [<span class="st">'London'</span>, <span class="st">'Paris'</span>, <span class="st">'London'</span>]
+})
+<span class="kw">print</span>(df)
+<span class="out">#       Name  Score    City
+# 0    Alice     85  London
+# 1      Bob     92   Paris
+# 2  Charlie     78  London</span></pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight tip">✅ The numbers 0, 1, 2 on the left are the <strong>index</strong> — Pandas adds these automatically. You can replace them with meaningful labels later (like dates or names).</div>
+  </div>
+
+  <!-- 2. Loading Data -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">2</div>
+      <div class="concept-title">Loading real data — your first CSV</div>
+      <span class="concept-tag b">Beginner</span>
+    </div>
+    <div class="story-lead">
+      You're not going to be typing data by hand. Real data lives in files — CSV, Excel, databases. The most common is CSV (Comma Separated Values). Loading it into Pandas takes <em>one line</em>.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Load a CSV file</span>
+df = pd.<span class="fn">read_csv</span>(<span class="st">'sales_data.csv'</span>)
+
+<span class="cm"># Load an Excel file</span>
+df = pd.<span class="fn">read_excel</span>(<span class="st">'report.xlsx'</span>, sheet_name=<span class="st">'Q1'</span>)
+
+<span class="cm"># Load a JSON file</span>
+df = pd.<span class="fn">read_json</span>(<span class="st">'data.json'</span>)
+
+<span class="cm"># Load straight from the internet (yes, really)</span>
+url = <span class="st">'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'</span>
+df = pd.<span class="fn">read_csv</span>(url)
+
+<span class="cm"># Save your work back to CSV</span>
+df.<span class="fn">to_csv</span>(<span class="st">'cleaned_data.csv'</span>, index=<span class="nm">False</span>)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight why">💡 <strong>index=False</strong> when saving means "don't write the row numbers into the file." Without it, you'd get an ugly extra column called "Unnamed: 0" every time you reload the file.</div>
+  </div>
+
+  <!-- 3. Exploring -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">3</div>
+      <div class="concept-title">Exploring your dataset — the first 5 commands</div>
+      <span class="concept-tag b">Beginner</span>
+    </div>
+    <div class="story-lead">
+      You've loaded your data. It's a new dataset. You have no idea what's in it. Here's the thing every experienced data scientist does before anything else — they <em>look</em> at it. Not all of it. Just enough to understand what they're dealing with.
+      <br><br>
+      These 5 commands are your flashlight in the dark. Run them in this order on every new dataset you touch.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block">df.<span class="fn">head</span>()        <span class="cm"># See the first 5 rows — "what does this look like?"</span>
+df.<span class="fn">shape</span>         <span class="cm"># (rows, columns) — "how big is this?"</span>
+df.<span class="fn">info</span>()         <span class="cm"># Column names, data types, non-null counts — "what's in here?"</span>
+df.<span class="fn">describe</span>()    <span class="cm"># Stats for every numeric column — "any weird outliers?"</span>
+df.<span class="fn">isnull</span>().<span class="fn">sum</span>() <span class="cm"># Count missing values per column — "what's broken?"</span></pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ What does each one actually tell you?</button>
+    <div class="reveal-box">
+      <strong>head()</strong> — Shows you the raw rows. You'll immediately spot formatting issues, unexpected characters, or columns that look wrong.<br><br>
+      <strong>shape</strong> — Is this 100 rows or 1 million? Matters for what you do next.<br><br>
+      <strong>info()</strong> — The most useful one. Tells you if a "number" column is stored as text (common bug!), which columns have missing data, and how much memory you're using.<br><br>
+      <strong>describe()</strong> — If the minimum of "Age" is -5, something is wrong. If the max of "Price" is 9,999,999, someone fat-fingered a value. This catches all of that.<br><br>
+      <strong>isnull().sum()</strong> — Missing data is the most common real-world problem. Know exactly where the holes are before you do anything else.
+    </div>
+  </div>
+
+  <!-- 4. Selecting -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">4</div>
+      <div class="concept-title">Selecting data — asking questions of your table</div>
+      <span class="concept-tag b">Beginner</span>
+    </div>
+    <div class="story-lead">
+      Now you can see your data. But you don't always want all of it. Sometimes you want just one column. Sometimes just certain rows. This is the most important skill in Pandas — knowing how to ask for exactly what you need.
+      <br><br>
+      Pandas gives you two tools for this: <em>.loc</em> (select by label) and <em>.iloc</em> (select by position). People get confused by these. Here's the simplest way to think about it.
+    </div>
+    <div class="analogy">
+      <div class="analogy-label">Analogy — loc vs iloc</div>
+      <p>Imagine a library. Every book has both a <strong>title</strong> and a <strong>shelf number</strong>.<br><br>
+      <strong>.loc</strong> = "give me the book called 'Harry Potter'" — you use the name/label<br>
+      <strong>.iloc</strong> = "give me the 3rd book on the 2nd shelf" — you use the position number<br><br>
+      For most tables, they do similar things. The difference matters when your index has custom labels (like dates or names).</p>
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Select one column → returns a Series</span>
+df[<span class="st">'Name'</span>]
+
+<span class="cm"># Select multiple columns → returns a DataFrame</span>
+df[[<span class="st">'Name'</span>, <span class="st">'Score'</span>]]
+
+<span class="cm"># .loc — use labels (row label, column name)</span>
+df.<span class="fn">loc</span>[<span class="nm">0</span>]                  <span class="cm"># The row where index == 0</span>
+df.<span class="fn">loc</span>[<span class="nm">0</span>:<span class="nm">2</span>]               <span class="cm"># Rows 0, 1, 2 — NOTE: END IS INCLUSIVE with loc</span>
+df.<span class="fn">loc</span>[<span class="nm">0</span>, <span class="st">'Name'</span>]          <span class="cm"># Row 0, column 'Name'</span>
+df.<span class="fn">loc</span>[df[<span class="st">'City'</span>]==<span class="st">'London'</span>, <span class="st">'Score'</span>]  <span class="cm"># Scores for London rows</span>
+
+<span class="cm"># .iloc — use positions (like list indexing)</span>
+df.<span class="fn">iloc</span>[<span class="nm">0</span>]                 <span class="cm"># First row (position 0)</span>
+df.<span class="fn">iloc</span>[<span class="nm">0</span>:<span class="nm">3</span>]              <span class="cm"># Rows at positions 0, 1, 2 — END IS EXCLUSIVE</span>
+df.<span class="fn">iloc</span>[<span class="nm">0</span>, <span class="nm">1</span>]             <span class="cm"># Row 0, Column 1 (by number)</span>
+df.<span class="fn">iloc</span>[-<span class="nm">1</span>]               <span class="cm"># Last row</span></pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight warn">⚠️ The most common beginner mistake: <strong>loc slicing is inclusive</strong> (loc[0:3] gives rows 0,1,2,3) but <strong>iloc slicing is exclusive</strong> (iloc[0:3] gives rows 0,1,2). This catches everyone at least once.</div>
+  </div>
+
+  <!-- 5. Filtering -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">5</div>
+      <div class="concept-title">Filtering — "show me only the rows where..."</div>
+      <span class="concept-tag b">Beginner</span>
+    </div>
+    <div class="story-lead">
+      This is where Pandas starts feeling like a superpower. Instead of scrolling through 80,000 rows looking for London sales over £500, you write one line and get exactly that. Instantly.
+      <br><br>
+      The way it works: you write a condition that produces a True/False for every row, then hand that mask to the DataFrame. It gives back only the True rows.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Single condition</span>
+df[df[<span class="st">'Score'</span>] > <span class="nm">80</span>]
+
+<span class="cm"># Two conditions — wrap EACH in parentheses, use & not 'and'</span>
+df[(df[<span class="st">'Score'</span>] > <span class="nm">80</span>) & (df[<span class="st">'City'</span>] == <span class="st">'London'</span>)]
+
+<span class="cm"># OR condition</span>
+df[(df[<span class="st">'City'</span>] == <span class="st">'London'</span>) | (df[<span class="st">'City'</span>] == <span class="st">'Paris'</span>)]
+
+<span class="cm"># Better way to write OR: use .isin()</span>
+df[df[<span class="st">'City'</span>].<span class="fn">isin</span>([<span class="st">'London'</span>, <span class="st">'Paris'</span>])]
+
+<span class="cm"># Rows containing a string (partial match)</span>
+df[df[<span class="st">'Name'</span>].str.<span class="fn">contains</span>(<span class="st">'Ali'</span>, case=<span class="nm">False</span>)]
+
+<span class="cm"># The .query() method — more readable for complex filters</span>
+df.<span class="fn">query</span>(<span class="st">"Score > 80 and City == 'London'"</span>)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight danger">❌ Don't use Python's <code>and</code> / <code>or</code> keywords inside DataFrame filters. They don't work on arrays. Use <code>&</code> and <code>|</code> instead — and always wrap conditions in <code>()</code>.</div>
+  </div>
+
+  <!-- 6. Modifying -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">6</div>
+      <div class="concept-title">Adding, changing, and removing columns</div>
+      <span class="concept-tag b">Beginner</span>
+    </div>
+    <div class="story-lead">
+      Raw data is rarely in the exact shape you need. Maybe you need to create a new column from two existing ones, rename something, or delete columns you don't care about. This is part of every real data project — shaping the data to answer your specific question.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Add a new column derived from existing ones</span>
+df[<span class="st">'Score_Boosted'</span>] = df[<span class="st">'Score'</span>] * <span class="nm">1.1</span>
+
+<span class="cm"># Add a column from a condition</span>
+df[<span class="st">'Passed'</span>] = df[<span class="st">'Score'</span>] >= <span class="nm">75</span>   <span class="cm"># True/False column</span>
+
+<span class="cm"># Rename columns</span>
+df.<span class="fn">rename</span>(columns={<span class="st">'Score'</span>: <span class="st">'Test_Score'</span>, <span class="st">'City'</span>: <span class="st">'Location'</span>}, inplace=<span class="nm">True</span>)
+
+<span class="cm"># Drop a column you don't need</span>
+df.<span class="fn">drop</span>(columns=[<span class="st">'Score_Boosted'</span>], inplace=<span class="nm">True</span>)
+
+<span class="cm"># Sort by a column</span>
+df.<span class="fn">sort_values</span>(<span class="st">'Test_Score'</span>, ascending=<span class="nm">False</span>)
+
+<span class="cm"># Reset the index after filtering/sorting</span>
+df.<span class="fn">reset_index</span>(drop=<span class="nm">True</span>, inplace=<span class="nm">True</span>)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight tip">✅ <strong>inplace=True</strong> modifies the DataFrame in-place so you don't need to reassign. Without it: <code>df = df.drop(...)</code>. Both work — just be consistent.</div>
+  </div>
+
+</div><!-- end chapter 1 -->
+
+
+<!-- ══════════════════════════════════════════
+     CHAPTER 2 — INTERMEDIATE
+══════════════════════════════════════════ -->
+<div id="tab-intermediate" class="tab-content">
+
+  <div class="story-banner" data-chapter="Chapter 2">
+    <div class="chapter-label">Chapter 2 · Intermediate</div>
+    <h2>Week 2. The data is messier than you expected.</h2>
+    <p>You've explored the dataset. And you've noticed things. Some rows have blank values. Some dates are formatted wrong. Your manager wants a breakdown of sales by city. Someone wants the data merged with another file from a different department.</p>
+    <p>This is the real work. The basics got you through the door. These skills are what actually move the needle on a project.</p>
+  </div>
+
+  <!-- 1. Missing Data -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">1</div>
+      <div class="concept-title">Handling missing data — the most common real-world problem</div>
+      <span class="concept-tag i">Intermediate</span>
+    </div>
+    <div class="story-lead">
+      In a perfect world, every cell in your dataset has a value. In the real world, surveys get skipped, sensors fail, forms go half-filled, and exports go wrong. Missing data — represented in Pandas as <em>NaN</em> (Not a Number) — is everywhere.
+      <br><br>
+      The wrong move is to panic and just delete every row with a missing value. Depending on the context, that could throw away 40% of your data. The right move is to <em>understand why it's missing</em> and choose a strategy accordingly.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Step 1: Find where the holes are</span>
+df.<span class="fn">isnull</span>().<span class="fn">sum</span>()               <span class="cm"># Count NaN per column</span>
+df.<span class="fn">isnull</span>().<span class="fn">mean</span>() * <span class="nm">100</span>        <span class="cm"># % missing per column</span>
+df.<span class="fn">notna</span>()                          <span class="cm"># True where NOT null (opposite of isnull)</span>
+df[<span class="st">'Discount'</span>].<span class="fn">notna</span>()               <span class="cm"># Create boolean flag: True = discount applied</span>
+
+<span class="cm"># Step 2: Decide your strategy</span>
+
+<span class="cm"># Option A: Drop rows (use when < 5% missing and it's random)</span>
+df.<span class="fn">dropna</span>()
+df.<span class="fn">dropna</span>(subset=[<span class="st">'Age'</span>, <span class="st">'Score'</span>])   <span class="cm"># Only drop if THESE columns are null</span>
+
+<span class="cm"># Option B: Fill with a fixed value</span>
+df[<span class="st">'Score'</span>].<span class="fn">fillna</span>(<span class="nm">0</span>)               <span class="cm"># Only do this if 0 is meaningful</span>
+df[<span class="st">'City'</span>].<span class="fn">fillna</span>(<span class="st">'Unknown'</span>)
+
+<span class="cm"># Option C: Fill with stats (the smart way)</span>
+df[<span class="st">'Age'</span>].<span class="fn">fillna</span>(df[<span class="st">'Age'</span>].<span class="fn">mean</span>())      <span class="cm"># Fill with average</span>
+df[<span class="st">'Age'</span>].<span class="fn">fillna</span>(df[<span class="st">'Age'</span>].<span class="fn">median</span>())    <span class="cm"># Median is better if there are outliers</span>
+
+<span class="cm"># Option D: Forward fill (for time series — carry last known value forward)</span>
+df.<span class="fn">ffill</span>()
+df.<span class="fn">bfill</span>()  <span class="cm"># Backward fill</span></pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ How do I know which strategy to use?</button>
+    <div class="reveal-box">
+      Think about <em>why</em> the data is missing:<br><br>
+      <strong>Missing randomly?</strong> (e.g., someone just didn't fill the form) → fill with mean or median, or drop if it's rare.<br>
+      <strong>Missing because it doesn't apply?</strong> (e.g., "spouse name" for unmarried people) → fill with a specific value like "N/A".<br>
+      <strong>Missing in a time series?</strong> (e.g., sensor went offline for 3 hours) → ffill() or bfill() carries the last known value forward/backward, which is usually the most realistic assumption.<br><br>
+      <strong>Never blindly use fillna(0)</strong> — if the column is "Revenue", a 0 means "no revenue", not "no data". Those are very different things.
+    </div>
+  </div>
+
+  <!-- 2. GroupBy -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">2</div>
+      <div class="concept-title">GroupBy — answering "what about each group?"</div>
+      <span class="concept-tag i">Intermediate</span>
+    </div>
+    <div class="story-lead">
+      Your manager asks: <em>"What's the average score per city?"</em> Or: <em>"Which product sold the most in each region?"</em><br><br>
+      This is GroupBy territory. The concept is beautifully simple: <strong>split</strong> your data into groups, <strong>apply</strong> a calculation to each group, then <strong>combine</strong> the results back together. Three steps. Every time.
+    </div>
+    <div class="analogy">
+      <div class="analogy-label">Analogy</div>
+      <p>Imagine sorting a pile of exam papers by class (split), calculating the average score for each class (apply), then writing each class's average on a board (combine). That's exactly what groupby does — but on any dataset, in one line.</p>
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Basic: average score per city</span>
+df.<span class="fn">groupby</span>(<span class="st">'City'</span>)[<span class="st">'Score'</span>].<span class="fn">mean</span>()
+
+<span class="cm"># Multiple aggregations at once</span>
+df.<span class="fn">groupby</span>(<span class="st">'City'</span>).<span class="fn">agg</span>(
+    avg_score  = (<span class="st">'Score'</span>, <span class="st">'mean'</span>),
+    max_score  = (<span class="st">'Score'</span>, <span class="st">'max'</span>),
+    num_people = (<span class="st">'Name'</span>,  <span class="st">'count'</span>)
+)
+
+<span class="cm"># Group by multiple columns</span>
+df.<span class="fn">groupby</span>([<span class="st">'City'</span>, <span class="st">'Passed'</span>])[<span class="st">'Score'</span>].<span class="fn">mean</span>()
+
+<span class="cm"># transform — add the group stat back to original rows</span>
+<span class="cm"># Example: add each person's city average as a new column</span>
+df[<span class="st">'City_Avg'</span>] = df.<span class="fn">groupby</span>(<span class="st">'City'</span>)[<span class="st">'Score'</span>].<span class="fn">transform</span>(<span class="st">'mean'</span>)
+
+<span class="cm"># Now you can compare each person to their city's average</span>
+df[<span class="st">'Above_City_Avg'</span>] = df[<span class="st">'Score'</span>] > df[<span class="st">'City_Avg'</span>]</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight why">💡 <strong>agg() vs transform()</strong> — agg() shrinks your data (one row per group). transform() keeps your data the same size but fills in group-level stats next to each row. Use transform() when you want to compare individuals to their group.</div>
+  </div>
+
+  <!-- 3. Merge -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">3</div>
+      <div class="concept-title">Merging datasets — combining two tables into one</div>
+      <span class="concept-tag i">Intermediate</span>
+    </div>
+    <div class="story-lead">
+      You have one file with customer names and IDs. Another file with those IDs and their purchase history. You need both together. This is merging — the Pandas equivalent of SQL's JOIN. It's one of the most important operations in data work.
+    </div>
+    <div class="analogy">
+      <div class="analogy-label">Analogy — types of joins</div>
+      <p>Imagine two lists: a guest list (df1) and a meal preference list (df2). Not everyone on the guest list chose a meal, and some meal choices don't match a guest.<br><br>
+      <strong>Inner join</strong> — only guests who also chose a meal (only matching rows)<br>
+      <strong>Left join</strong> — all guests, with meal info where it exists (NaN if no match)<br>
+      <strong>Outer join</strong> — everything from both lists, matched where possible</p>
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block">customers = pd.<span class="fn">DataFrame</span>({<span class="st">'ID'</span>: [<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], <span class="st">'Name'</span>: [<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="st">'Charlie'</span>]})
+orders    = pd.<span class="fn">DataFrame</span>({<span class="st">'ID'</span>: [<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>], <span class="st">'Amount'</span>: [<span class="nm">120</span>,<span class="nm">85</span>,<span class="nm">200</span>]})
+
+<span class="cm"># Inner join — only IDs that appear in BOTH tables</span>
+pd.<span class="fn">merge</span>(customers, orders, on=<span class="st">'ID'</span>, how=<span class="st">'inner'</span>)
+<span class="out"># ID=2 (Bob), ID=3 (Charlie) only — Alice has no order, ID=4 has no customer</span>
+
+<span class="cm"># Left join — keep ALL customers, add order info where available</span>
+pd.<span class="fn">merge</span>(customers, orders, on=<span class="st">'ID'</span>, how=<span class="st">'left'</span>)
+<span class="out"># All 3 customers. Alice gets NaN for Amount.</span>
+
+<span class="cm"># Outer join — everything from both tables</span>
+pd.<span class="fn">merge</span>(customers, orders, on=<span class="st">'ID'</span>, how=<span class="st">'outer'</span>)
+
+<span class="cm"># When column names differ between tables</span>
+pd.<span class="fn">merge</span>(customers, orders, left_on=<span class="st">'CustomerID'</span>, right_on=<span class="st">'CustID'</span>)
+
+<span class="cm"># Stack rows (same columns, more rows)</span>
+pd.<span class="fn">concat</span>([df_jan, df_feb, df_mar], axis=<span class="nm">0</span>).<span class="fn">reset_index</span>(drop=<span class="nm">True</span>)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight tip">✅ After a left join, check <code>merged_df.isnull().sum()</code> — any NaN in the right table's columns means some IDs didn't match. This is often a data quality issue worth investigating.</div>
+  </div>
+
+  <!-- 4. Apply & Map -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">4</div>
+      <div class="concept-title">Apply & Map — transforming data your way</div>
+      <span class="concept-tag i">Intermediate</span>
+    </div>
+    <div class="story-lead">
+      Sometimes a column needs to be transformed in a way Pandas doesn't have a built-in function for. Maybe you need to convert scores to letter grades, clean up inconsistent text formatting, or combine two columns into one. <em>apply()</em> and <em>map()</em> let you run any custom logic on your data.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># apply on a single column — run a function on every value</span>
+<span class="kw">def</span> <span class="fn">to_grade</span>(score):
+    <span class="kw">if</span> score >= <span class="nm">90</span>: <span class="kw">return</span> <span class="st">'A'</span>
+    <span class="kw">elif</span> score >= <span class="nm">75</span>: <span class="kw">return</span> <span class="st">'B'</span>
+    <span class="kw">elif</span> score >= <span class="nm">60</span>: <span class="kw">return</span> <span class="st">'C'</span>
+    <span class="kw">else</span>: <span class="kw">return</span> <span class="st">'F'</span>
+
+df[<span class="st">'Grade'</span>] = df[<span class="st">'Score'</span>].<span class="fn">apply</span>(to_grade)
+
+<span class="cm"># apply on a whole row (axis=1) — access multiple columns</span>
+df[<span class="st">'Summary'</span>] = df.<span class="fn">apply</span>(
+    <span class="kw">lambda</span> row: f<span class="st">"{row['Name']} scored {row['Score']} in {row['City']}"</span>,
+    axis=<span class="nm">1</span>
+)
+
+<span class="cm"># map — swap values using a dictionary (fast & clean)</span>
+df[<span class="st">'Grade_Points'</span>] = df[<span class="st">'Grade'</span>].<span class="fn">map</span>({<span class="st">'A'</span>: <span class="nm">4.0</span>, <span class="st">'B'</span>: <span class="nm">3.0</span>, <span class="st">'C'</span>: <span class="nm">2.0</span>, <span class="st">'F'</span>: <span class="nm">0.0</span>})</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight warn">⚠️ apply() is convenient but slow on large datasets — it runs Python code row by row. In Chapter 3, you'll learn vectorized alternatives that do the same thing 100x faster.</div>
+  </div>
+
+  <!-- 5. String Ops -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">5</div>
+      <div class="concept-title">String operations — cleaning messy text</div>
+      <span class="concept-tag i">Intermediate</span>
+    </div>
+    <div class="story-lead">
+      Real data is full of messy strings. "  london ", "LONDON", "London" — these all look different to Python, but they mean the same thing. The <em>.str</em> accessor gives you an entire toolkit for cleaning text, all vectorized (fast).
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Fix common issues instantly</span>
+df[<span class="st">'City'</span>] = df[<span class="st">'City'</span>].str.<span class="fn">strip</span>().<span class="fn">str</span>.<span class="fn">title</span>()   <span class="cm"># Remove spaces, fix casing</span>
+
+df[<span class="st">'Name'</span>].str.<span class="fn">upper</span>()           <span class="cm"># ALL CAPS</span>
+df[<span class="st">'Name'</span>].str.<span class="fn">lower</span>()           <span class="cm"># all lowercase</span>
+df[<span class="st">'Name'</span>].str.<span class="fn">len</span>()             <span class="cm"># Character count</span>
+df[<span class="st">'Name'</span>].str.<span class="fn">replace</span>(<span class="st">'Dr. '</span>, <span class="st">''</span>, regex=<span class="nm">False</span>)  <span class="cm"># Remove prefix</span>
+
+<span class="cm"># Split a column into two (e.g., "First Last" → two columns)</span>
+df[[<span class="st">'First'</span>, <span class="st">'Last'</span>]] = df[<span class="st">'Full_Name'</span>].str.<span class="fn">split</span>(<span class="st">' '</span>, expand=<span class="nm">True</span>)
+
+<span class="cm"># Extract numbers or patterns using regex</span>
+df[<span class="st">'Postcode'</span>].str.<span class="fn">extract</span>(r<span class="st">'([A-Z]{1,2}\d{1,2})'</span>)
+
+<span class="cm"># Filter rows containing a substring</span>
+df[df[<span class="st">'Email'</span>].str.<span class="fn">contains</span>(<span class="st">'@gmail.com'</span>, na=<span class="nm">False</span>)]</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- 6. DateTime -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">6</div>
+      <div class="concept-title">DateTime — making sense of dates</div>
+      <span class="concept-tag i">Intermediate</span>
+    </div>
+    <div class="story-lead">
+      "How many sales happened in Q3?" "What's the weekly trend?" "How many days between sign-up and first purchase?" These are questions about time, and they require your date columns to actually behave like dates — not strings.
+      <br><br>
+      One common mistake: loading a CSV where "Date" is just stored as text. Pandas can't do date arithmetic on text. You need to convert it first.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># Convert a text column to proper datetime</span>
+df[<span class="st">'Date'</span>] = pd.<span class="fn">to_datetime</span>(df[<span class="st">'Date'</span>])
+
+<span class="cm"># Or parse on load</span>
+df = pd.<span class="fn">read_csv</span>(<span class="st">'data.csv'</span>, parse_dates=[<span class="st">'Date'</span>])
+
+<span class="cm"># Extract parts of the date</span>
+df[<span class="st">'Year'</span>]    = df[<span class="st">'Date'</span>].dt.year
+df[<span class="st">'Month'</span>]   = df[<span class="st">'Date'</span>].dt.month
+df[<span class="st">'Weekday'</span>] = df[<span class="st">'Date'</span>].dt.day_name()   <span class="cm"># 'Monday', 'Tuesday'...</span>
+df[<span class="st">'Quarter'</span>] = df[<span class="st">'Date'</span>].dt.quarter
+
+<span class="cm"># Date arithmetic — days since date</span>
+df[<span class="st">'Days_Ago'</span>] = (pd.<span class="fn">Timestamp</span>(<span class="st">'today'</span>) - df[<span class="st">'Date'</span>]).dt.days
+
+<span class="cm"># Filter by date range</span>
+df[df[<span class="st">'Date'</span>] >= <span class="st">'2024-01-01'</span>]
+df[df[<span class="st">'Date'</span>].<span class="fn">between</span>(<span class="st">'2024-01-01'</span>, <span class="st">'2024-06-30'</span>)]
+
+<span class="cm"># Resample time series — group by time period</span>
+df.<span class="fn">set_index</span>(<span class="st">'Date'</span>).<span class="fn">resample</span>(<span class="st">'ME'</span>)[<span class="st">'Revenue'</span>].<span class="fn">sum</span>()  <span class="cm"># Monthly total</span></pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+  </div>
+
+</div><!-- end chapter 2 -->
+
+
+<!-- ══════════════════════════════════════════
+     CHAPTER 3 — ADVANCED
+══════════════════════════════════════════ -->
+<div id="tab-advanced" class="tab-content">
+
+  <div class="story-banner" data-chapter="Chapter 3">
+    <div class="chapter-label">Chapter 3 · Advanced</div>
+    <h2>Month 3. Your script works. But it takes 20 minutes.</h2>
+    <p>Your code is correct. Your analysis is right. But the dataset grew — it's now 10 million rows. Your apply() loop takes 18 minutes. Your colleague's script crashes with a MemoryError. Your manager wants results daily.</p>
+    <p>This chapter is about the difference between code that works and code that works <em>well</em>. Speed. Memory. Readability. These are the skills that move you from analyst to engineer.</p>
+  </div>
+
+  <!-- 1. Vectorization -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">1</div>
+      <div class="concept-title">Vectorization — why your apply() is killing performance</div>
+      <span class="concept-tag a">Advanced</span>
+    </div>
+    <div class="story-lead">
+      Here's something most people don't know when they start: <em>apply() is basically a Python for-loop in disguise</em>. It goes through every row one at a time in Python, which is slow. Vectorized operations, on the other hand, hand the entire computation to NumPy's C-compiled engine, which processes all rows at once.
+      <br><br>
+      On 1 million rows, this difference can be <em>100x</em>. Not 10%. One hundred times faster.
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card bad">
+        <div class="label">❌ SLOW — Python loop disguised as apply</div>
+        <pre>df['Boosted'] = df['Score'].apply(
+    lambda x: x * 1.1
+)
+
+df['Grade'] = df['Score'].apply(
+    lambda x: 'Pass' if x >= 50
+    else 'Fail'
+)</pre>
+      </div>
+      <div class="compare-card good">
+        <div class="label">✅ FAST — Vectorized operations</div>
+        <pre>df['Boosted'] = df['Score'] * 1.1
+
+import numpy as np
+df['Grade'] = np.where(
+    df['Score'] >= 50,
+    'Pass', 'Fail'
+)</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># np.where — vectorized if/else</span>
+df[<span class="st">'Label'</span>] = np.<span class="fn">where</span>(df[<span class="st">'Score'</span>] > <span class="nm">80</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>)
+
+<span class="cm"># np.select — vectorized if/elif/else (multiple conditions)</span>
+conditions = [
+    df[<span class="st">'Score'</span>] >= <span class="nm">90</span>,
+    df[<span class="st">'Score'</span>] >= <span class="nm">75</span>,
+    df[<span class="st">'Score'</span>] >= <span class="nm">60</span>,
+]
+choices = [<span class="st">'A'</span>, <span class="st">'B'</span>, <span class="st">'C'</span>]
+df[<span class="st">'Grade'</span>] = np.<span class="fn">select</span>(conditions, choices, default=<span class="st">'F'</span>)
+
+<span class="cm"># Math operations are automatically vectorized</span>
+df[<span class="st">'Z_Score'</span>] = (df[<span class="st">'Score'</span>] - df[<span class="st">'Score'</span>].<span class="fn">mean</span>()) / df[<span class="st">'Score'</span>].<span class="fn">std</span>()</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight tip">✅ Rule of thumb: if you can express your transformation as arithmetic, comparison, or a NumPy function — do that. Only reach for apply() when the logic genuinely can't be expressed any other way.</div>
+  </div>
+
+  <!-- 2. Memory Optimization -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">2</div>
+      <div class="concept-title">Memory optimization — fit 10x more data in the same RAM</div>
+      <span class="concept-tag a">Advanced</span>
+    </div>
+    <div class="story-lead">
+      By default, Pandas makes conservative assumptions about your data. It stores integers as 64-bit (8 bytes each) even if your values only go up to 100. It stores text columns as Python objects — meaning every string is stored separately in memory, even if the same city name appears 500,000 times.
+      <br><br>
+      A few targeted changes to your data types can cut memory usage by 50–90%. On a 2GB dataset, that's the difference between crashing and running fine.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># First: measure your current memory usage</span>
+df.<span class="fn">memory_usage</span>(deep=<span class="nm">True</span>).<span class="fn">sum</span>() / <span class="nm">1024</span>**<span class="nm">2</span>  <span class="cm"># in MB</span>
+
+<span class="cm"># Downcast integers — use the smallest type that fits your values</span>
+df[<span class="st">'Age'</span>]   = pd.<span class="fn">to_numeric</span>(df[<span class="st">'Age'</span>],   downcast=<span class="st">'integer'</span>)
+df[<span class="st">'Score'</span>] = pd.<span class="fn">to_numeric</span>(df[<span class="st">'Score'</span>], downcast=<span class="st">'float'</span>)
+<span class="cm"># int64 (8 bytes) → int8 (1 byte) if values fit in [-128, 127]</span>
+<span class="cm"># float64 (8 bytes) → float32 (4 bytes) for most practical uses</span>
+
+<span class="cm"># The biggest win: category dtype for low-cardinality string columns</span>
+<span class="cm"># If 'City' has 1 million rows but only 50 unique values...</span>
+df[<span class="st">'City'</span>]  = df[<span class="st">'City'</span>].<span class="fn">astype</span>(<span class="st">'category'</span>)  <span class="cm"># ~90% less memory</span>
+df[<span class="st">'Grade'</span>] = df[<span class="st">'Grade'</span>].<span class="fn">astype</span>(<span class="st">'category'</span>)
+
+<span class="cm"># Load only the columns you actually need</span>
+df = pd.<span class="fn">read_csv</span>(<span class="st">'massive_file.csv'</span>, usecols=[<span class="st">'Name'</span>, <span class="st">'Score'</span>, <span class="st">'City'</span>])
+
+<span class="cm"># Process huge files in chunks instead of loading everything</span>
+results = []
+<span class="kw">for</span> chunk <span class="kw">in</span> pd.<span class="fn">read_csv</span>(<span class="st">'huge.csv'</span>, chunksize=<span class="nm">50_000</span>):
+    filtered = chunk[chunk[<span class="st">'Score'</span>] > <span class="nm">80</span>]
+    results.<span class="fn">append</span>(filtered)
+df = pd.<span class="fn">concat</span>(results, ignore_index=<span class="nm">True</span>)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Why does category dtype save so much memory?</button>
+    <div class="reveal-box">
+      When a column has type <strong>object</strong> (Python strings), Pandas stores a separate string object in memory for each row. If "London" appears 500,000 times, it stores "London" 500,000 times — 6 characters × 500,000 = 3MB just for one value.<br><br>
+      With <strong>category</strong>, Pandas builds a lookup table: {0: "London", 1: "Paris", 2: "Tokyo"}. Then each row just stores a small integer (0, 1, or 2). Instead of 3MB, it's 500,000 × 1 byte = 500KB. A 6x reduction — and that's just for one value. With many unique strings, the savings are even bigger.
+    </div>
+  </div>
+
+  <!-- 3. Method Chaining -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">3</div>
+      <div class="concept-title">Method chaining — writing code that reads like a story</div>
+      <span class="concept-tag a">Advanced</span>
+    </div>
+    <div class="story-lead">
+      Here's a dirty secret: most real data pipelines are just a sequence of transformations. Load, clean, filter, reshape, aggregate. When you write each step as a separate assignment (<code>df = df.drop(...)</code>, <code>df = df.rename(...)</code>), it works — but it's hard to read and easy to make mistakes.
+      <br><br>
+      Method chaining lets you write the entire pipeline as a single, flowing expression. Each step feeds into the next. It reads top-to-bottom like a recipe.
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card bad">
+        <div class="label">❌ Before — scattered assignments</div>
+        <pre>df = df.dropna()
+df = df.rename(
+  columns={'old':'new'})
+df = df[df['Age'] > 18]
+df = df.sort_values('Score')
+df = df.reset_index(drop=True)</pre>
+      </div>
+      <div class="compare-card good">
+        <div class="label">✅ After — clean pipeline</div>
+        <pre>df = (
+  df
+  .dropna()
+  .rename(columns={'old':'new'})
+  .query("Age > 18")
+  .sort_values('Score')
+  .reset_index(drop=True)
+)</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># .pipe() — slot your own function into the chain</span>
+<span class="kw">def</span> <span class="fn">add_rank</span>(df, col):
+    df[col + <span class="st">'_rank'</span>] = df[col].<span class="fn">rank</span>(pct=<span class="nm">True</span>)
+    <span class="kw">return</span> df
+
+<span class="kw">def</span> <span class="fn">log_shape</span>(df):
+    <span class="kw">print</span>(f<span class="st">"Shape: {df.shape}"</span>)   <span class="cm"># Great for debugging pipelines</span>
+    <span class="kw">return</span> df
+
+result = (
+    df
+    .<span class="fn">dropna</span>(subset=[<span class="st">'Score'</span>, <span class="st">'City'</span>])
+    .<span class="fn">query</span>(<span class="st">"Score >= 50"</span>)
+    .<span class="fn">pipe</span>(log_shape)              <span class="cm"># Check rows at this point</span>
+    .<span class="fn">pipe</span>(add_rank, <span class="st">'Score'</span>)      <span class="cm"># Add a custom column</span>
+    .<span class="fn">groupby</span>(<span class="st">'City'</span>).<span class="fn">agg</span>(avg=(<span class="st">'Score'</span>, <span class="st">'mean'</span>))
+    .<span class="fn">sort_values</span>(<span class="st">'avg'</span>, ascending=<span class="nm">False</span>)
+    .<span class="fn">reset_index</span>()
+)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- 4. Window Functions -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">4</div>
+      <div class="concept-title">Window functions — trends, rolling averages, and lag</div>
+      <span class="concept-tag a">Advanced</span>
+    </div>
+    <div class="story-lead">
+      Sometimes a single row's value only makes sense in context. "Sales this week were £40,000" — is that good or bad? You need to compare it to recent weeks. Window functions let you look at a "window" of rows around each row — without losing any data.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># 7-day rolling average (smooths out day-to-day noise)</span>
+df[<span class="st">'Sales_MA7'</span>] = df[<span class="st">'Sales'</span>].<span class="fn">rolling</span>(window=<span class="nm">7</span>).<span class="fn">mean</span>()
+
+<span class="cm"># Rolling standard deviation (measures volatility)</span>
+df[<span class="st">'Volatility'</span>] = df[<span class="st">'Sales'</span>].<span class="fn">rolling</span>(<span class="nm">7</span>).<span class="fn">std</span>()
+
+<span class="cm"># Cumulative sum and max (running totals)</span>
+df[<span class="st">'Running_Total'</span>] = df[<span class="st">'Sales'</span>].<span class="fn">cumsum</span>()
+df[<span class="st">'All_Time_High'</span>] = df[<span class="st">'Sales'</span>].<span class="fn">expanding</span>().<span class="fn">max</span>()
+
+<span class="cm"># Lag & lead — compare to previous/next row</span>
+df[<span class="st">'Yesterday'</span>]    = df[<span class="st">'Sales'</span>].<span class="fn">shift</span>(<span class="nm">1</span>)   <span class="cm"># Previous row's value</span>
+df[<span class="st">'Daily_Change'</span>] = df[<span class="st">'Sales'</span>] - df[<span class="st">'Sales'</span>].<span class="fn">shift</span>(<span class="nm">1</span>)
+df[<span class="st">'Pct_Change'</span>]   = df[<span class="st">'Sales'</span>].<span class="fn">pct_change</span>() * <span class="nm">100</span>
+
+<span class="cm"># Rank within groups (e.g., top performer per city)</span>
+df[<span class="st">'City_Rank'</span>] = df.<span class="fn">groupby</span>(<span class="st">'City'</span>)[<span class="st">'Score'</span>].<span class="fn">rank</span>(
+    method=<span class="st">'dense'</span>, ascending=<span class="nm">False</span>
+)
+top_per_city = df[df[<span class="st">'City_Rank'</span>] == <span class="nm">1</span>]</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- 5. eval & query -->
+  <div class="concept">
+    <div class="concept-header">
+      <div class="concept-num">5</div>
+      <div class="concept-title">eval() and query() — fast string-based computation</div>
+      <span class="concept-tag a">Advanced</span>
+    </div>
+    <div class="story-lead">
+      For very large DataFrames, even standard vectorized operations can be slow because they create large temporary arrays in memory. <em>eval()</em> and <em>query()</em> bypass this — they use the <strong>numexpr</strong> library under the hood, processing the expression without ever creating those intermediary arrays. Faster. Less memory.
+    </div>
+    <div class="code-wrap">
+      <pre class="code-block"><span class="cm"># eval — compute expressions without intermediate arrays</span>
+df.<span class="fn">eval</span>(<span class="st">'Total = Score + Bonus'</span>, inplace=<span class="nm">True</span>)
+
+<span class="cm"># Multiple computations in one eval call</span>
+df.<span class="fn">eval</span>(<span class="st">"""
+    Total      = Score + Bonus
+    Normalised = Score / Score.max()
+    Pass       = Score >= 50
+"""</span>, inplace=<span class="nm">True</span>)
+
+<span class="cm"># query — filter without creating boolean mask arrays</span>
+df.<span class="fn">query</span>(<span class="st">"Score > 80 and City == 'London'"</span>)
+
+<span class="cm"># Use Python variables inside query/eval with @ prefix</span>
+threshold = <span class="nm">80</span>
+city = <span class="st">'London'</span>
+df.<span class="fn">query</span>(<span class="st">"Score > @threshold and City == @city"</span>)
+
+<span class="cm"># Also works in eval</span>
+df.<span class="fn">eval</span>(<span class="st">"Adjusted = Score - @threshold"</span>)</pre>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="insight why">💡 eval() and query() shine most on DataFrames with millions of rows. For small DataFrames (&lt;10k rows), the overhead isn't worth it — just use regular operations.</div>
+  </div>
+
+</div><!-- end chapter 3 -->
+
+
+<!-- ══════════════════════════════════════════
+     CHEAT SHEET
+══════════════════════════════════════════ -->
+<div id="tab-cheatsheet" class="tab-content">
+
+  <div class="story-banner" data-chapter="Reference">
+    <div class="chapter-label">Quick Reference</div>
+    <h2>Everything in one place.</h2>
+    <p>The commands you'll reach for again and again — organized by what you're trying to do, not by how Pandas happens to name them.</p>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">Understanding your data</div>
+    <table>
+      <tr><th>What you want to know</th><th>How to ask Pandas</th></tr>
+      <tr><td>What does it look like?</td><td class="mono">df.head(10)</td></tr>
+      <tr><td>How big is it?</td><td class="mono">df.shape</td></tr>
+      <tr><td>What columns and types?</td><td class="mono">df.info()</td></tr>
+      <tr><td>Any statistics?</td><td class="mono">df.describe()</td></tr>
+      <tr><td>How many missing values?</td><td class="mono">df.isnull().sum()</td></tr>
+      <tr><td>Any duplicate rows?</td><td class="mono">df.duplicated().sum()</td></tr>
+      <tr><td>How many unique values?</td><td class="mono">df['col'].nunique()</td></tr>
+      <tr><td>Which values appear most?</td><td class="mono">df['col'].value_counts()</td></tr>
+    </table>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">Getting the data you want</div>
+    <table>
+      <tr><th>What you want</th><th>How to get it</th></tr>
+      <tr><td>One column</td><td class="mono">df['col']</td></tr>
+      <tr><td>Several columns</td><td class="mono">df[['col1', 'col2']]</td></tr>
+      <tr><td>Rows where condition is true</td><td class="mono">df[df['col'] > 5]</td></tr>
+      <tr><td>Rows matching a list of values</td><td class="mono">df[df['col'].isin(['a','b'])]</td></tr>
+      <tr><td>By row label (index)</td><td class="mono">df.loc[label]</td></tr>
+      <tr><td>By row number</td><td class="mono">df.iloc[3]</td></tr>
+      <tr><td>Readable multi-condition filter</td><td class="mono">df.query("col > 5 and city == 'London'")</td></tr>
+      <tr><td>Top N rows by value</td><td class="mono">df.nlargest(5, 'col')</td></tr>
+    </table>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">Cleaning your data</div>
+    <table>
+      <tr><th>The problem</th><th>The fix</th></tr>
+      <tr><td>Remove rows with any NaN</td><td class="mono">df.dropna()</td></tr>
+      <tr><td>Fill NaN with a value</td><td class="mono">df['col'].fillna(value)</td></tr>
+      <tr><td>Fill NaN with column mean</td><td class="mono">df['col'].fillna(df['col'].mean())</td></tr>
+      <tr><td>Forward fill time series gaps</td><td class="mono">df.ffill()</td></tr>
+      <tr><td>Remove duplicate rows</td><td class="mono">df.drop_duplicates()</td></tr>
+      <tr><td>Rename a column</td><td class="mono">df.rename(columns={'old': 'new'})</td></tr>
+      <tr><td>Fix inconsistent text casing</td><td class="mono">df['col'].str.strip().str.title()</td></tr>
+      <tr><td>Convert column type</td><td class="mono">df['col'].astype('int32')</td></tr>
+    </table>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">Summarizing and aggregating</div>
+    <table>
+      <tr><th>What you want</th><th>How to do it</th></tr>
+      <tr><td>Group by one column</td><td class="mono">df.groupby('col')['val'].mean()</td></tr>
+      <tr><td>Multiple aggregations</td><td class="mono">df.groupby('col').agg(avg=('val','mean'), n=('val','count'))</td></tr>
+      <tr><td>Add group stat to each row</td><td class="mono">df.groupby('col')['val'].transform('mean')</td></tr>
+      <tr><td>Pivot table</td><td class="mono">df.pivot_table(values, index, columns, aggfunc)</td></tr>
+      <tr><td>Wide → long format</td><td class="mono">pd.melt(df, id_vars=['id'], value_vars=['a','b'])</td></tr>
+      <tr><td>Correlation matrix</td><td class="mono">df.corr(numeric_only=True)</td></tr>
+    </table>
+  </div>
+
+  <div class="cheat-section">
+    <div class="cheat-title">Performance & scale</div>
+    <table>
+      <tr><th>The goal</th><th>How to achieve it</th></tr>
+      <tr><td>Replace apply() with fast conditional</td><td class="mono">np.where(condition, 'yes', 'no')</td></tr>
+      <tr><td>Multiple conditions, fast</td><td class="mono">np.select([c1,c2], ['v1','v2'], default='v3')</td></tr>
+      <tr><td>Reduce string column memory ~90%</td><td class="mono">df['col'].astype('category')</td></tr>
+      <tr><td>Reduce integer column memory</td><td class="mono">pd.to_numeric(df['col'], downcast='integer')</td></tr>
+      <tr><td>Load only needed columns</td><td class="mono">pd.read_csv('f.csv', usecols=['a','b'])</td></tr>
+      <tr><td>Handle huge files in chunks</td><td class="mono">pd.read_csv('f.csv', chunksize=50000)</td></tr>
+      <tr><td>Clean pipeline syntax</td><td class="mono">df.pipe(my_func).query(...).groupby(...)</td></tr>
+    </table>
+  </div>
+
+</div><!-- end cheatsheet -->
+
+
+<!-- ══════════════════════════════════════════
+     QUIZ
+══════════════════════════════════════════ -->
+<div id="tab-quiz" class="tab-content">
+
+  <div class="story-banner" data-chapter="Quiz">
+    <div class="chapter-label">Test Yourself</div>
+    <h2>How well do you know Pandas?</h2>
+    <p>10 questions across all three chapters. Each one is based on a real situation you'll face in actual data work — not trick questions, just practical knowledge. Click any option to reveal the answer and explanation.</p>
+  </div>
+
+  <!-- Q1 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 1 of 10 · Beginner</div>
+    <div class="quiz-q">You load a CSV and notice a column called "Revenue" shows type <code>object</code> in df.info() instead of <code>float64</code>. What's most likely the cause?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">The column has too many decimal places</button>
+    <button class="quiz-opt" onclick="answer(this,true)">Some cells contain text or symbols like "£" or commas, so Pandas stored it as string</button>
+    <button class="quiz-opt" onclick="answer(this,false)">The CSV file is corrupted</button>
+    <div class="quiz-fb" id="fb1"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 2 of 10 · Beginner</div>
+    <div class="quiz-q">What is the key difference between <code>df.loc[0:3]</code> and <code>df.iloc[0:3]</code>?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">loc is faster, iloc is more accurate</button>
+    <button class="quiz-opt" onclick="answer(this,true)">loc[0:3] returns rows labelled 0,1,2,3 (inclusive). iloc[0:3] returns rows at positions 0,1,2 (exclusive end)</button>
+    <button class="quiz-opt" onclick="answer(this,false)">They are identical — just aliases for each other</button>
+    <div class="quiz-fb" id="fb2"></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 3 of 10 · Beginner</div>
+    <div class="quiz-q">You want rows where Age > 25 AND City is 'London'. What's the correct syntax?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">df[df['Age'] > 25 and df['City'] == 'London']</button>
+    <button class="quiz-opt" onclick="answer(this,true)">df[(df['Age'] > 25) & (df['City'] == 'London')]</button>
+    <button class="quiz-opt" onclick="answer(this,false)">df.filter(Age=25, City='London')</button>
+    <div class="quiz-fb" id="fb3"></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 4 of 10 · Intermediate</div>
+    <div class="quiz-q">Your dataset has 20% of "Age" values missing. What's the best strategy?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">df.fillna(0) — fill with 0 to avoid errors</button>
+    <button class="quiz-opt" onclick="answer(this,false)">df.dropna() — remove all rows with any missing value</button>
+    <button class="quiz-opt" onclick="answer(this,true)">Fill with median age — it's robust to outliers, preserves the data, and doesn't distort statistics</button>
+    <div class="quiz-fb" id="fb4"></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 5 of 10 · Intermediate</div>
+    <div class="quiz-q">You want to add each person's city average score as a new column in the original DataFrame. Which method should you use?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">groupby().agg() — it reduces and returns the averages</button>
+    <button class="quiz-opt" onclick="answer(this,true)">groupby().transform() — it broadcasts the group result back to each original row</button>
+    <button class="quiz-opt" onclick="answer(this,false)">groupby().apply() — it applies a custom function</button>
+    <div class="quiz-fb" id="fb5"></div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 6 of 10 · Intermediate</div>
+    <div class="quiz-q">You merge two DataFrames with a left join. After merging, several columns from the right DataFrame have NaN values. What does this mean?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">The merge failed and you should use an inner join instead</button>
+    <button class="quiz-opt" onclick="answer(this,true)">Some rows in the left DataFrame had no matching key in the right DataFrame</button>
+    <button class="quiz-opt" onclick="answer(this,false)">The right DataFrame had missing values originally</button>
+    <div class="quiz-fb" id="fb6"></div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 7 of 10 · Advanced</div>
+    <div class="quiz-q">On a 5-million-row DataFrame, you need to label rows as 'High', 'Medium', or 'Low' based on Score thresholds. Which is fastest?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">df['Score'].apply(lambda x: 'High' if x>80 else 'Medium' if x>60 else 'Low')</button>
+    <button class="quiz-opt" onclick="answer(this,true)">np.select([df['Score']>80, df['Score']>60], ['High','Medium'], default='Low')</button>
+    <button class="quiz-opt" onclick="answer(this,false)">A for-loop with df.iterrows()</button>
+    <div class="quiz-fb" id="fb7"></div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 8 of 10 · Advanced</div>
+    <div class="quiz-q">A column 'Department' has 2 million rows but only 8 unique values. Changing it to which dtype saves the most memory?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">string</button>
+    <button class="quiz-opt" onclick="answer(this,false)">object</button>
+    <button class="quiz-opt" onclick="answer(this,true)">category — stores a small integer per row plus a lookup table, instead of the full string 2 million times</button>
+    <div class="quiz-fb" id="fb8"></div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 9 of 10 · Advanced</div>
+    <div class="quiz-q">What does <code>df['Sales'].shift(1)</code> return?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">Sales values shifted up by 1 unit (each value +1)</button>
+    <button class="quiz-opt" onclick="answer(this,true)">The Sales column offset by 1 row — each row gets the previous row's value (useful for computing day-over-day change)</button>
+    <button class="quiz-opt" onclick="answer(this,false)">The next row's value for each row</button>
+    <div class="quiz-fb" id="fb9"></div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="quiz-card">
+    <div class="quiz-num">Question 10 of 10 · Advanced</div>
+    <div class="quiz-q">You have a massive CSV file that's too large to fit in memory. What's the right approach to process it in Pandas?</div>
+    <button class="quiz-opt" onclick="answer(this,false)">Upgrade your RAM — Pandas needs to load the whole file</button>
+    <button class="quiz-opt" onclick="answer(this,false)">Split the file manually into smaller files first</button>
+    <button class="quiz-opt" onclick="answer(this,true)">Use pd.read_csv() with chunksize= to process the file in batches, accumulating only the results you need</button>
+    <div class="quiz-fb" id="fb10"></div>
+  </div>
+
+  <div id="quiz-result">
+    <h3 id="result-emoji">🎉</h3>
+    <p id="result-score" style="font-size:1.2rem;font-weight:700;color:#fff;margin:8px 0"></p>
+    <p id="result-msg" style="margin-top:6px"></p>
+  </div>
+
+</div><!-- end quiz -->
+
+<footer>
+  Made for learners, by learners · Pandas Mastery — From Story to Skill
+</footer>
+
+<script>
+// ── TAB SWITCHING ──
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const order = ['home','beginner','intermediate','advanced','cheatsheet','quiz'];
+  document.querySelectorAll('.tab-btn')[order.indexOf(name)].classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ── TOGGLE REVEAL ──
+function toggleReveal(btn) {
+  const box = btn.nextElementSibling;
+  const open = box.classList.toggle('open');
+  btn.textContent = open ? '▼ Hide explanation' : '▶ ' + btn.textContent.replace('▼ Hide explanation','').replace('▶ ','');
+}
+
+// ── COPY CODE ──
+function copyCode(btn) {
+  const text = btn.previousElementSibling.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.style.color = 'var(--beginner)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+  });
+}
+
+// ── QUIZ ──
+let answered = 0, correct = 0;
+const TOTAL = 10;
+
+const explanations = {
+  1: { ok: "Exactly. Currency symbols, commas, or any non-numeric character force Pandas to treat the column as strings. Fix: df['Revenue'] = df['Revenue'].str.replace('[£,]','',regex=True).astype(float)",
+       no: "The actual cause is non-numeric characters in the cells — symbols like £ or commas cause Pandas to fall back to storing the column as strings (object dtype)." },
+  2: { ok: "Correct. This catches almost everyone at least once. loc is label-based and inclusive on both ends. iloc is position-based and exclusive on the right — exactly like Python list slicing.",
+       no: "loc[0:3] gives rows with labels 0,1,2,3 (inclusive). iloc[0:3] gives positions 0,1,2 (exclusive on the right, like Python list slicing). A subtle but important difference." },
+  3: { ok: "Correct. You must use & (not 'and') for element-wise AND, and wrap each condition in parentheses due to Python's operator precedence rules.",
+       no: "Using Python's 'and' keyword raises a ValueError on arrays — it expects a single True/False, not an array. Use & instead, with each condition wrapped in ()" },
+  4: { ok: "Good thinking. Dropping 20% of your data is rarely the right call. Filling with median is statistically sound and keeps your dataset intact. fillna(0) is wrong here — 0 is a real age, not a placeholder.",
+       no: "Dropping 20% of your data destroys too much information. fillna(0) is misleading — age 0 is real data. The best option is usually to fill with median (or mean, but median handles outliers better)." },
+  5: { ok: "Exactly. transform() is the right tool here — it returns a Series with the same index as the original DataFrame, so you can assign it directly as a new column. agg() would reduce rows.",
+       no: "agg() reduces each group to one row — the result has fewer rows than the original. You need transform(), which broadcasts the group result back to each individual row, preserving the original shape." },
+  6: { ok: "Correct. A left join keeps all rows from the left DataFrame. If a row in the left has no matching key in the right, Pandas fills the right-table columns with NaN. This is normal and expected — not an error.",
+       no: "Those NaN values are expected in a left join. They mean some rows in the left table had no matching key in the right table. It's not an error — but it's a signal worth investigating to ensure your join key is correct." },
+  7: { ok: "Correct. np.select() is fully vectorized — it operates in NumPy's C engine on the entire array at once. apply() loops through rows in Python, which is dramatically slower at scale.",
+       no: "np.select() is the fastest. It's vectorized — NumPy processes the entire array in compiled C code. apply() is essentially a Python loop and is 10–100x slower on large data. iterrows() is even slower than apply()." },
+  8: { ok: "Right. category dtype replaces each string with a small integer, and stores a lookup dictionary. With only 8 unique values, most rows store a 1-byte integer instead of a 10–20 byte string.",
+       no: "The answer is category. Instead of storing the full string 2 million times, Pandas stores a small integer per row (e.g., 0–7) plus one lookup table. Memory savings can be 80–95% for low-cardinality columns." },
+  9: { ok: "Exactly right. shift(1) moves the series down by 1 position — so each row now contains the previous row's value. shift(-1) would give the next row's value. Essential for computing period-over-period changes.",
+       no: "shift(1) offsets the Series by 1 row — each row gets the previous row's value. It doesn't add 1 to the values. It's used to compute lag features or day-over-day differences like: df['Sales'] - df['Sales'].shift(1)" },
+  10: { ok: "Exactly. chunksize= makes read_csv() return an iterator. You process each batch and collect only what you need — the full file never lives in memory at once.",
+        no: "The right answer is chunksize=. It turns read_csv() into an iterator that processes the file in batches. You apply your logic per chunk and accumulate only the relevant results." }
+};
+
+function answer(btn, isCorrect) {
+  const card = btn.closest('.quiz-card');
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  answered++;
+  if (isCorrect) correct++;
+
+  card.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      if (b.onclick.toString().includes('true')) b.classList.add('correct');
+    });
+  }
+
+  const n = answered;
+  const fb = card.querySelector('.quiz-fb');
+  const exp = explanations[n] || {};
+  fb.textContent = isCorrect ? '✅ ' + (exp.ok || 'Correct!') : '❌ ' + (exp.no || 'Not quite.');
+  fb.className = 'quiz-fb ' + (isCorrect ? 'ok' : 'no');
+
+  if (answered === TOTAL) {
+    const pct = Math.round(correct / TOTAL * 100);
+    const res = document.getElementById('quiz-result');
+    res.style.display = 'block';
+    document.getElementById('result-emoji').textContent =
+      pct >= 90 ? '🏆' : pct >= 70 ? '🎯' : pct >= 50 ? '📚' : '🌱';
+    document.getElementById('result-score').textContent =
+      `${correct} / ${TOTAL} — ${pct}%`;
+    document.getElementById('result-msg').textContent =
+      pct >= 90 ? "Outstanding. You understand Pandas the way professionals do — not just the syntax, but the why." :
+      pct >= 70 ? "Strong work. A few gaps, but you're thinking like a data scientist. Review the questions you missed and you'll nail them next time." :
+      pct >= 50 ? "Good foundation. Read through the chapters for any topics that tripped you up — the explanations are there." :
+                  "Every expert started here. Go through Chapter 1, then 2, then come back. You'll be surprised how quickly it clicks.";
+    res.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+</script>
+</body>
+</html>
